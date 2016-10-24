@@ -27,19 +27,19 @@
                 var result = [];
                 var headItem=[];
                 var dataItem=[];
-                var dataCsv=[];
+                var dataFormulae=[];
 
                 sheet_name_list.forEach(function(y) {
                     var worksheet = workbook.Sheets[y];
                     var json = XLSX.utils.sheet_to_json(workbook.Sheets[y]);
-                    var csv = XLSX.utils.sheet_to_formulae(workbook.Sheets[y]);
+                    var formulae = XLSX.utils.sheet_to_formulae(workbook.Sheets[y]);
                     if(json.length > 0){
                         result=json;
-                        dataCsv=csv;
+                        dataFormulae=formulae;
                     }
 
                 });
-                $.each(dataCsv,function (j,head) {
+                $.each(dataFormulae,function (j,head) {
                     var headlist=head.split("='")
                     if(/^[A-Z]1$/.test(headlist[0])){
                         headItem.push(headlist[1])
