@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>xlsx upload excel</title>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/xlsx.core.min.js"></script>
+</head>
+<body>
+<h1>xlsx upload excel</h1>
+<input type="file" accept=" application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="upload_excel"/>
+
+<div id="content"></div>
+</body>
+<script>
+    function handleFile(e) {
+        var files = e.target.files;
+        var i,f;
+        for (i = 0, f = files[i]; i != files.length; ++i) {
+            var reader = new FileReader();
+            var name = f.name;
+            reader.onload = function(e) {
+                var data = e.target.result;
+
+                var workbook = XLSX.read(data, {type: 'binary'});
+                var sheet_name_list = workbook.SheetNames;
+                var result = [];
+                var headItem=[];
+                var dataItem=[];
+                var dataCsv=[];
+
+                sheet_name_list.forEach(function(y) {
+                    var worksheet = workbook.Sheets[y];
+                    var json = XLSX.utils.sheet_to_json(workbook.Sheets[y]);
+                    var csv = XLSX.utils.sheet_to_formulae(workbook.Sheets[y]);
+                    if(json.length > 0){
+                        result=json;
+                        dataCsv=csv;
+                    }
+
+                });
+                $.each(dataCsv,function (j,head) {
+                    var headlist=head.split("='")
+                    if(/^[A-Z]1$/.test(headlist[0])){
+                        headItem.push(headlist[1])
+                    }
+                })
+                $.each(result,function (i,val) {
+                    var data=[]
+                    $.each(headItem,function (k,head) {
+                        val[head]!=undefined?data.push(val[head]):data.push("")
+                    })
+                    dataItem.push(data)
+                })
+                var headstr='';
+                var datastr='';
+                $.each(headItem,function (i,head) {
+                    headstr=headstr+'<th style="border: 1px solid #cccccc">'+head+'</th>'
+                })
+                $.each(dataItem,function (i,data) {
+                    datastr=datastr+'<tr >';
+                    $.each(data,function (j,val) {
+                        datastr=datastr+'<td style="border: 1px solid #cccccc">'+val+'</td>'
+                    })
+                    datastr=datastr+'</tr>';
+                })
+                var table='<table style="border: 1px solid #cccccc;border-collapse: collapse;"><thead><tr style="font-weight: bold">'+headstr+'</tr></thead><tbody>'+datastr+ '</tbody></table>'
+               $('#content').html( $('#content').html()+table);
+
+            };
+            reader.readAsBinaryString(f);
+        }
+    }
+    $('#upload_excel').bind('change', handleFile);
+</script>
+</html>
