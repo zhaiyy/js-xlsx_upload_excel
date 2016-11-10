@@ -28,18 +28,22 @@
                 var headItem=[];
                 var dataItem=[];
                 var dataFormulae=[];
+                var dataCsv=[];
+                var headCode=[];
+                var rowNum=0;
 
                 sheet_name_list.forEach(function(y) {
                     var worksheet = workbook.Sheets[y];
                     var json = XLSX.utils.sheet_to_json(workbook.Sheets[y]);
                     var formulae = XLSX.utils.sheet_to_formulae(workbook.Sheets[y]);
+                    var csv = XLSX.utils.sheet_to_formulae(workbook.Sheets[y]);
                     if(json.length > 0){
                         result=json;
-                        dataFormulae=formulae;
+                        dataCsv=csv;
                     }
 
                 });
-                $.each(dataFormulae,function (j,head) {
+                /*$.each(dataFormulae,function (j,head) {
                     var headlist=head.split("='")
                     if(/^[A-Z]1$/.test(headlist[0])){
                         headItem.push(headlist[1])
@@ -51,6 +55,35 @@
                         val[head]!=undefined?data.push(val[head]):data.push("")
                     })
                     dataItem.push(data)
+                })*/
+                $.each(dataCsv,function (j,head) {
+                    var headlist=head.split("='")
+                    rowNum=/^[A-Z]+(\d+)$/.exec(headlist[0])[1];
+                    headCode.indexOf(/^([A-Z]+)\d+$/.exec(headlist[0])[1])==-1?headCode.push(/^([A-Z]+)\d+$/.exec(headlist[0])[1]):'';
+
+                })
+                headCode=headCode.sort();
+                $.each(headCode,function (i,val) {
+                    headItem[val]='';
+                })
+                for(var i=0;i<Number(rowNum)-1;i++){
+                    var obj={};
+                    $.each(headCode,function (i,val) {
+                        obj[val]='';
+                    })
+                    dataItem[i]=obj;
+
+                }
+                $.each(dataCsv,function (j,head) {
+                    var headlist=head.split("='")
+                    var code= /^([A-Z]+)\d+$/.exec(headlist[0])[1];
+                    var row= /^[A-Z]+(\d+)$/.exec(headlist[0])[1];
+                    if(row==1){
+                        headItem[code]=headlist[1]
+                    }else{
+                        dataItem[row-2][code]=headlist[1];
+                    }
+
                 })
                 var headstr='';
                 var datastr='';
@@ -70,6 +103,8 @@
             };
             reader.readAsBinaryString(f);
         }
+        $('#upload_excel').val('')
+
     }
     $('#upload_excel').bind('change', handleFile);
 </script>
